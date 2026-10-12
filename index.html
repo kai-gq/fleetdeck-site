@@ -86,35 +86,10 @@ html:not([data-theme="light"]) .ic-moon{display:none;}
 .hero .sub{font-size:clamp(15px,1.8vw,18px);color:var(--muted);max-width:640px;margin:0 auto 30px;}
 .hero .ctas{display:flex;gap:14px;justify-content:center;margin-bottom:64px;flex-wrap:wrap;}
 
-/* ===== Hero 产品示意窗 ===== */
+/* ===== Hero 产品截图 ===== */
 .hero-visual{max-width:960px;margin:0 auto 26px;text-align:left;}
-.app-window{border:1px solid var(--card-border);border-radius:16px;background:var(--card);box-shadow:0 24px 60px rgba(15,23,42,.12);overflow:hidden;}
-.app-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--bg-line);background:var(--bg-soft);}
-.app-bar .dot{width:11px;height:11px;border-radius:50%;}
-.dot.r{background:#f87171;}.dot.y{background:#fbbf24;}.dot.g{background:#34d399;}
-.app-title{font-size:12.5px;color:var(--muted);margin-left:8px;font-weight:600;}
-.app-body{display:grid;grid-template-columns:210px 1fr;min-height:330px;}
-.side{border-right:1px solid var(--bg-line);padding:16px;background:var(--bg-soft);}
-.side-head{font-size:11.5px;color:var(--faint);font-weight:700;margin-bottom:12px;letter-spacing:.04em;}
-.agent{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:13px;color:var(--ink);margin-bottom:4px;background:var(--card);border:1px solid var(--bg-line);}
-.agent .av{width:22px;height:22px;border-radius:6px;background:var(--chip-bg);color:var(--chip-ink);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none;}
-.agent .nm{flex:1;}
-.st{width:8px;height:8px;border-radius:50%;flex:none;}
-.st.busy{background:var(--busy);box-shadow:0 0 0 3px var(--chip-bg);}
-.st.idle{background:var(--idle);}
-.main{padding:18px;display:flex;flex-direction:column;gap:14px;}
-.panel-title{font-size:12.5px;font-weight:700;color:var(--muted);}
-.task-row{display:flex;gap:12px;flex-wrap:wrap;}
-.task-card{flex:1;min-width:190px;border:1px solid var(--card-border);border-radius:12px;padding:13px 15px;background:var(--bg-soft);}
-.task-card .t{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px;}
-.task-card .d{font-size:12px;color:var(--muted);margin-top:5px;}
-.tag{font-size:11px;font-weight:700;padding:2.5px 9px;border-radius:999px;flex:none;}
-.tag.run{background:rgba(37,99,235,.1);color:var(--blue);}
-.tag.done{background:rgba(22,163,74,.12);color:var(--ok);}
-.recv-row{display:flex;gap:12px;flex-wrap:wrap;}
-.recv{flex:1;min-width:190px;border:1px solid var(--card-border);border-radius:12px;padding:12px 15px;background:var(--bg-soft);}
-.recv .r{font-size:13px;font-weight:700;color:var(--ink);}
-.recv .s{font-size:12px;color:var(--muted);margin-top:4px;}
+.hero-shot{border:1px solid var(--card-border);border-radius:16px;background:var(--card);box-shadow:0 24px 60px rgba(15,23,42,.12);overflow:hidden;}
+.hero-shot img{display:block;width:100%;height:auto;}
 .num-strip{display:flex;justify-content:center;gap:0;flex-wrap:wrap;border-top:1px solid var(--bg-line);}
 .num-item{padding:22px 30px;text-align:center;}
 .num-item b{font-size:26px;font-weight:800;color:var(--blue);display:block;line-height:1.2;}
@@ -144,11 +119,16 @@ html:not([data-theme="light"]) .ic-moon{display:none;}
 .num-card .cp{margin-top:6px;font-size:12.5px;color:var(--muted);line-height:1.6;}
 .num-foot{margin-top:24px;text-align:center;font-size:12.5px;color:var(--muted);}
 
-/* ===== 界面占位 ===== */
-.ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-.ph{border:1.5px dashed var(--faint);border-radius:var(--radius);padding:30px 18px;text-align:center;color:var(--faint);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg-soft);}
-.ph b{font-size:14px;color:var(--muted);font-weight:700;}
-.ph span{font-size:12.5px;}
+/* ===== 界面截图 ===== */
+.shot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+.shot{margin:0;border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:var(--card-shadow);}
+.shot img{display:block;width:100%;height:auto;}
+.shot figcaption{padding:13px 18px 15px;display:flex;flex-direction:column;gap:3px;}
+.shot figcaption b{font-size:14.5px;font-weight:700;color:var(--ink);}
+.shot figcaption span{font-size:12.5px;color:var(--muted);}
+img.shot-dark{display:none;}
+html[data-theme="dark"] img.shot-light{display:none;}
+html[data-theme="dark"] img.shot-dark{display:block;}
 
 /* ===== 工作流 ===== */
 .wf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
@@ -172,16 +152,13 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
 }
 @media(max-width:900px){
   .grid3,.grid6,.wf-grid{grid-template-columns:repeat(2,1fr);}
-  .ph-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:720px){
   section{padding:64px 0;}
   .nav-links{position:fixed;top:64px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(12px);flex-direction:column;align-items:flex-start;padding:18px 24px 24px;gap:18px;border-bottom:1px solid var(--bg-line);display:none;z-index:99;}
   .nav-links.open{display:flex;}
   .burger{display:block;}
-  .grid3,.grid4,.grid6,.wf-grid,.ph-grid{grid-template-columns:1fr;}
-  .app-body{grid-template-columns:1fr;}
-  .side{display:none;}
+  .grid3,.grid4,.grid6,.wf-grid,.shot-grid{grid-template-columns:1fr;}
   .num-item{padding:16px 22px;}
   .num-strip{border:none;}
   .num-item{width:50%;border:1px solid var(--bg-line);}
@@ -231,32 +208,9 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
       <a class="btn btn-ghost" href="https://github.com/kai-gq/AI-FleetDeck" target="_blank" rel="noopener">查看 GitHub</a>
     </div>
     <div class="hero-visual">
-      <div class="app-window">
-        <div class="app-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="app-title">FleetDeck · 指挥官视图</span></div>
-        <div class="app-body">
-          <aside class="side">
-            <div class="side-head">团队</div>
-            <div class="agent"><span class="av">B</span><span class="nm">Boss · 主管</span><span class="st busy"></span></div>
-            <div class="agent"><span class="av">秘</span><span class="nm">语音伙伴</span><span class="st idle"></span></div>
-            <div class="agent"><span class="av">C</span><span class="nm">Claude Code</span><span class="st busy"></span></div>
-            <div class="agent"><span class="av">X</span><span class="nm">Codex</span><span class="st idle"></span></div>
-            <div class="agent"><span class="av">O</span><span class="nm">OpenCode</span><span class="st busy"></span></div>
-            <div class="agent"><span class="av">G</span><span class="nm">Grok</span><span class="st idle"></span></div>
-            <div class="agent"><span class="av">P</span><span class="nm">Pi</span><span class="st idle"></span></div>
-          </aside>
-          <main class="main">
-            <div class="panel-title">最近委派</div>
-            <div class="task-row">
-              <div class="task-card"><div class="t">登录页重构<span class="tag run">执行中</span></div><div class="d">Boss → Claude Code · 产出合规派活书</div></div>
-              <div class="task-card"><div class="t">监控修复<span class="tag run">执行中</span></div><div class="d">Codex · 真工具真凭据</div></div>
-            </div>
-            <div class="panel-title">产出回执</div>
-            <div class="recv-row">
-              <div class="recv"><div class="r">API 封装 · 已核对通过</div><div class="s">OpenCode · 办结登记 · 结果自动播报</div></div>
-              <div class="recv"><div class="r">语音首句 3.9s</div><div class="s">常驻化提速 ≈8× · 主动汇报链路正常</div></div>
-            </div>
-          </main>
-        </div>
+      <div class="hero-shot">
+        <img class="shot-light" src="assets/shots/home-light.jpg" alt="FleetDeck 指挥台界面（明亮模式）：团队状态 · 2D 战场 · 任务树 · 秘书面板" fetchpriority="high">
+        <img class="shot-dark" src="assets/shots/home-dark.jpg" alt="FleetDeck 指挥台界面（深色模式）：团队状态 · 2D 战场 · 任务树 · 秘书面板">
       </div>
       <div class="num-strip">
         <div class="num-item"><b>3.9s</b><span>语音首句出声</span></div>
@@ -390,18 +344,34 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
   </div>
 </section>
 
-<!-- ===== 界面占位 ===== -->
+<!-- ===== 界面截图 ===== -->
 <section class="band-soft" id="interface">
   <div class="wrap">
     <div class="section-head">
       <h2>指挥官视图</h2>
-      <p>以下为系统界面占位，接入真实界面截图后即可替换。</p>
+      <p>以下为真实界面截图，跟随右上角明暗开关自动切换。</p>
     </div>
-    <div class="ph-grid">
-      <div class="ph"><b>指挥台总览 · 系统界面截图占位</b><span>智能体列表 · 忙闲状态 · 最近委派</span></div>
-      <div class="ph"><b>委派详情 · 系统界面截图占位</b><span>Boss 拆解 · 下属分配 · 进度回执</span></div>
-      <div class="ph"><b>语音伙伴 · 系统界面截图占位</b><span>实时语音 · 主动播报 · 提醒通道</span></div>
-      <div class="ph"><b>业务看板 · 系统界面截图占位</b><span>Bolba 待办 · 到期提醒 · 项目分组</span></div>
+    <div class="shot-grid">
+      <figure class="shot">
+        <img class="shot-light" src="assets/shots/commander-light.jpg" alt="指挥官总览（明亮模式）" loading="lazy">
+        <img class="shot-dark" src="assets/shots/commander-dark.jpg" alt="指挥官总览（深色模式）" loading="lazy">
+        <figcaption><b>指挥官总览</b><span>智能体列表 · 忙闲状态 · 最近委派</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <img class="shot-light" src="assets/shots/delegation-light.jpg" alt="委派详情（明亮模式）" loading="lazy">
+        <img class="shot-dark" src="assets/shots/delegation-dark.jpg" alt="委派详情（深色模式）" loading="lazy">
+        <figcaption><b>委派详情</b><span>Boss 拆解 · 下属分配 · 进度回执</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <img class="shot-light" src="assets/shots/flat-light.jpg" alt="平铺视图（明亮模式）" loading="lazy">
+        <img class="shot-dark" src="assets/shots/flat-dark.jpg" alt="平铺视图（深色模式）" loading="lazy">
+        <figcaption><b>平铺</b><span>全员卡片 · 状态一览 · 快速定位</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <img class="shot-light" src="assets/shots/battlefield-light.jpg" alt="3D 战场（明亮模式）" loading="lazy">
+        <img class="shot-dark" src="assets/shots/battlefield-dark.jpg" alt="3D 战场（深色模式）" loading="lazy">
+        <figcaption><b>3D 战场</b><span>三维阵型 · 舰队态势 · 聚焦查看</span></figcaption>
+      </figure>
     </div>
   </div>
 </section>
