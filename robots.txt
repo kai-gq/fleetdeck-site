@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kai-gq.github.io/fleetdeck-site/sitemap.xml

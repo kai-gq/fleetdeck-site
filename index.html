@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN" id="top">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FleetDeck · 多智能体指挥台 —— 用中文语音指挥一支 AI 舰队</title>
+<meta name="description" content="FleetDeck(舰队甲板)· 多智能体指挥台:把 Claude Code / Codex / OpenCode / Grok / Pi 等 CLI 编码代理组织成一支有上下级的 AI 舰队——中文优先界面、中文语音伙伴、微信 ClawBot、8 类触发器与工作流引擎,基于 Tide Commander(MIT)深度改造。">
+<link rel="canonical" href="https://kai-gq.github.io/fleetdeck-site/">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FleetDeck">
+<meta property="og:url" content="https://kai-gq.github.io/fleetdeck-site/">
+<meta property="og:title" content="FleetDeck · 多智能体指挥台 —— 用中文语音指挥一支 AI 舰队">
+<meta property="og:description" content="把 Claude Code / Codex / OpenCode / Grok / Pi 等 CLI 编码代理组织成一支有上下级的 AI 舰队。中文优先界面、中文语音伙伴、微信 ClawBot、8 类触发器。">
+<meta property="og:image" content="https://kai-gq.github.io/fleetdeck-site/assets/01-3d-view.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FleetDeck · 多智能体指挥台">
+<meta name="twitter:description" content="把 Claude Code / Codex / OpenCode / Grok / Pi 等 CLI 编码代理组织成一支有上下级的 AI 舰队。">
+<meta name="twitter:image" content="https://kai-gq.github.io/fleetdeck-site/assets/01-3d-view.jpg">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="%230a0a0f"/><path d="M16 5 L19.2 15.8 L16 27 L12.8 15.8 Z" fill="%2306b6d4"/><path d="M5 16 L15.8 12.8 L27 16 L15.8 19.2 Z" fill="%238b5cf6" opacity=".7"/></svg>'>
+<style>
+/* ============ 设计变量(来源:obsidian-docs 07-07 §5 设计规范) ============ */
+:root{
+  --bg:#0a0a0f; --bg2:#0d0d14; --card:#15151f;
+  --line:#20202c; --line2:#2c2c3e;
+  --tx:#ffffff; --tx2:#c9c9d4; --tx3:#a0a0b0; --tx4:#606070;
+  --ac1:#6366f1; --ac2:#8b5cf6; --ac3:#06b6d4;
+  --grad:linear-gradient(135deg,#6366f1,#8b5cf6,#06b6d4);
+  --mono:ui-monospace,Consolas,"Cascadia Mono","SFMono-Regular",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{
+  margin:0;background:var(--bg);color:var(--tx2);
+  font-family:var(--sans);font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+/* 噪点材质(去塑料感,固定层)*/
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:5;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--ac3);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--ac3);outline-offset:3px;border-radius:4px}
+h1,h2,h3{color:var(--tx);line-height:1.3;margin:0 0 .6em;font-weight:700}
+p{margin:0 0 1em}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+section{padding:88px 0;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+.sec-lead{max-width:44em;color:var(--tx3);font-size:17px;margin-bottom:36px}
+
+/* ============ 顶部导航 ============ */
+.nav{
+  position:sticky;top:0;z-index:50;background:rgba(10,10,15,.94);
+  border-bottom:1px solid var(--line);
+}
+.nav.scrolled{box-shadow:0 12px 28px rgba(0,0,0,.38)}
+.nav-in{display:flex;align-items:center;gap:28px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--tx);font-weight:700;font-size:17px;letter-spacing:.5px;flex:0 0 auto;padding:9px 0}
+.brand:hover{text-decoration:none}
+.brand svg{display:block}
+.nav-links{display:flex;gap:4px;margin-left:auto;list-style:none;padding:0;margin-block:0}
+.nav-links a{
+  display:block;padding:8px 12px;border-radius:8px;color:var(--tx3);
+  font-size:14.5px;transition:color .2s,background-color .2s;
+}
+.nav-links a:hover{color:var(--tx);text-decoration:none;background:#171722}
+.nav-links a.active{color:var(--ac3)}
+.nav-links a.active::after{content:"";display:block;height:2px;margin-top:2px;border-radius:2px;background:var(--grad)}
+.burger{
+  display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line2);border-radius:10px;
+  background:transparent;cursor:pointer;position:relative;
+}
+.burger span,.burger span::before,.burger span::after{
+  content:"";position:absolute;left:13px;right:13px;height:2px;background:var(--tx2);border-radius:2px;transition:transform .25s var(--ease),top .25s var(--ease);
+}
+.burger span{top:21px}
+.burger span::before{top:-6px}
+.burger span::after{top:6px}
+
+/* ============ 首屏 ============ */
+.hero{position:relative;padding:96px 0 72px;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(640px 320px at 22% 6%, rgba(99,102,241,.16), transparent 70%),
+    radial-gradient(560px 300px at 78% 12%, rgba(6,182,212,.10), transparent 72%);
+}
+.hero .wrap{position:relative}
+.kicker{display:flex;align-items:center;gap:12px;color:var(--tx3);font-size:14px;letter-spacing:.14em;margin-bottom:22px}
+.kicker .rule{width:56px;height:3px;border-radius:3px;background:var(--grad)}
+.hero h1{font-size:clamp(44px,7.4vw,72px);letter-spacing:.02em;margin:0 0 6px}
+.hero .sub{font-size:clamp(20px,2.6vw,26px);color:var(--tx3);font-weight:500;margin:0 0 26px}
+.hero .lead{font-size:clamp(21px,3vw,30px);color:var(--tx2);font-weight:600;line-height:1.5;margin:0 0 18px;max-width:24em}
+.hero .desc{max-width:40em;color:var(--tx3);margin-bottom:34px}
+.cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:56px}
+.btn{
+  display:inline-block;padding:12px 22px;border-radius:11px;font-size:15.5px;font-weight:600;
+  transition:transform .2s var(--ease),background-color .2s,border-color .2s,color .2s;
+}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn-primary{background:var(--ac3);color:#06181c}
+.btn-primary:hover{background:#22c7e3}
+.btn-ghost{border:1px solid var(--line2);color:var(--tx2)}
+.btn-ghost:hover{border-color:var(--ac3);color:var(--tx)}
+.credit{color:var(--tx4);font-size:13.5px;margin-top:10px}
+.credit b{color:var(--tx3);font-weight:600}
+
+/* ============ 截图框 ============ */
+figure.shot{margin:0}
+.shot .frame{
+  display:block;border:1px solid var(--line2);border-radius:14px;overflow:hidden;
+  background:var(--card);transition:border-color .25s;
+}
+.shot .frame:hover{border-color:#3a3a52}
+.shot img{width:100%}
+.shot figcaption{color:var(--tx3);font-size:13.5px;margin-top:12px;padding-left:2px}
+.fig-wide{max-width:920px;margin:40px auto 0}
+.fig-full{margin:44px 0 0}
+
+/* ============ 入场与滚动显现(克制;reduced-motion 全关) ============ */
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.js .hero .ups{animation:rise .55s var(--ease) both;animation-delay:var(--d,0ms)}
+.js .rv{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease);transition-delay:var(--d,0ms)}
+.js .rv.in{opacity:1;transform:none}
+
+/* ============ 卡片/列表基础 ============ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 26px 22px}
+.card h3{font-size:18.5px;margin-bottom:10px}
+.card .tag{
+  display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ac3);
+  border:1px solid #164050;background:#0b1a20;border-radius:999px;padding:2px 10px;margin-bottom:14px;
+}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{position:relative;padding-left:18px;margin-bottom:.55em;color:var(--tx3);font-size:15px}
+ul.plain li::before{content:"";position:absolute;left:2px;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--ac3);opacity:.75}
+ul.plain li b{color:var(--tx2);font-weight:600}
+/* ============ 三轴 ============ */
+.axes{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.axes .card{display:flex;flex-direction:column}
+
+/* ============ 步骤条(S4-A) ============ */
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;position:relative;margin:30px 0 8px}
+.steps::before{content:"";position:absolute;top:13px;left:5%;right:5%;height:1px;background:var(--line2)}
+.step{position:relative;padding-top:38px;text-align:center;font-size:13.5px;color:var(--tx3);line-height:1.55}
+.step::before{
+  content:attr(data-n);position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:27px;height:27px;border-radius:50%;background:var(--bg);border:1px solid var(--ac3);
+  color:var(--ac3);font-family:var(--mono);font-size:13px;line-height:25px;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.step b{display:block;color:var(--tx2);font-weight:600;margin-bottom:2px}
+.result-line{
+  margin-top:26px;padding:16px 20px;border:1px solid var(--line2);border-radius:12px;background:var(--bg2);
+  color:var(--tx3);font-size:14.5px;
+}
+.result-line strong{color:var(--tx);font-weight:700}
+.result-line .num{color:var(--ac3);font-weight:700}
+
+/* ============ 场景 B 两步 ============ */
+.two-steps{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:8px}
+.two-steps .card h3{display:flex;align-items:baseline;gap:10px}
+.two-steps .card h3 .idx{font-family:var(--mono);font-size:13px;color:var(--ac3);letter-spacing:.06em}
+.two-steps p{margin-bottom:0;font-size:15px;color:var(--tx3)}
+.two-steps .num{color:var(--tx2);font-weight:600}
+
+/* ============ 能力全景 ============ */
+.caps{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:20px}
+.caps .card{padding:22px 22px 18px}
+.caps .card h3{font-size:16.5px}
+.caps .card p{margin:0;font-size:14.5px;color:var(--tx3)}
+
+/* ============ 图库 ============ */
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+.gallery .shot figcaption{font-size:13px}
+.phone{max-width:310px;margin:48px auto 0}
+.phone .frame{border-radius:26px;padding:10px;background:#0f0f17}
+.phone img{border-radius:18px;width:100%}
+
+/* ============ 办公室(现状/路线图) ============ */
+.office-2col{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.office-2col .card p{font-size:15px;color:var(--tx3);margin-bottom:0}
+.crew-quote{
+  margin:44px auto 0;max-width:46em;text-align:center;color:var(--tx3);font-size:16.5px;
+  border-left:0;padding:0 12px;
+}
+.crew-quote b{color:var(--tx2)}
+
+/* ============ 数字墙 ============ */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:20px;max-width:1148px;margin:0 auto}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 24px 20px}
+.stat .v{
+  font-size:38px;font-weight:800;color:var(--tx);line-height:1.15;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;margin-bottom:6px;
+}
+.stat .v em{font-style:normal;font-size:24px;color:var(--ac3);font-weight:700;margin-left:2px}
+.stat .k{color:var(--tx2);font-weight:600;font-size:15px;margin-bottom:4px}
+.stat .m{color:var(--tx4);font-size:12.5px;line-height:1.6}
+.footnote{max-width:44em;margin:30px auto 0;color:var(--tx4);font-size:13px;text-align:center}
+
+/* ============ 关于 / 页脚 ============ */
+.about-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:start}
+.about-grid p{color:var(--tx3);font-size:15.5px}
+.pending{
+  font-family:var(--mono);font-size:13.5px;color:var(--tx3);border:1px dashed var(--line2);
+  border-radius:10px;padding:10px 14px;display:inline-block;margin-top:6px;background:var(--bg2);
+}
+.pending b{color:var(--ac3);font-weight:600}
+.about-side{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--card)}
+.about-side dl{margin:0;font-size:13.5px}
+.about-side dt{color:var(--tx4);margin-top:14px}
+.about-side dt:first-child{margin-top:0}
+.about-side dd{margin:2px 0 0;color:var(--tx2);font-family:var(--mono);font-size:13px}
+footer.site{border-top:1px solid var(--line);padding:38px 0 52px;color:var(--tx4);font-size:13.5px}
+footer.site .cols{display:grid;grid-template-columns:1.1fr 1fr 1.1fr;gap:26px}
+footer.site b{color:var(--tx3);font-weight:600}
+footer.site .uptop{display:inline-block;margin-top:22px;color:var(--tx3)}
+.totop{
+  position:fixed;right:22px;bottom:22px;z-index:40;width:42px;height:42px;border-radius:12px;
+  border:1px solid var(--line2);background:rgba(21,21,31,.92);color:var(--tx2);
+  display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s var(--ease);
+  transform:translateY(8px);
+}
+.totop.show{opacity:1;pointer-events:auto;transform:none}
+.totop:hover{border-color:var(--ac3);color:var(--tx);text-decoration:none}
+
+/* ============ 五家 CLI 图标条 ============ */
+.cli-row{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 26px}
+.cli{
+  display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:999px;
+  padding:6px 15px 6px 9px;background:var(--card);color:var(--tx3);font-size:13.5px;
+}
+.cli img{width:20px;height:20px;object-fit:contain}
+
+/* ============ 架构图 ============ */
+.arch{margin:40px 0 0}
+.arch svg{width:100%;height:auto;display:block}
+
+/* ============ 响应式 ============ */
+@media (max-width:900px){
+  .axes{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr;gap:0}
+  .steps::before{top:0;left:13px;right:auto;bottom:14px;width:1px;height:auto}
+  .step{text-align:left;padding:0 0 22px 46px}
+  .step::before{left:0;transform:none}
+  .two-steps,.office-2col{grid-template-columns:1fr}
+  .about-grid{grid-template-columns:1fr}
+  .nav-links{
+    display:none;position:absolute;top:64px;left:0;right:0;background:#0c0c13;
+    border-bottom:1px solid var(--line);flex-direction:column;padding:10px 16px 16px;gap:2px;
+  }
+  .nav-links.open{display:flex}
+  .nav-links a{padding:11px 10px;font-size:15.5px}
+  .burger{display:block}
+  .burger[aria-expanded="true"] span{top:21px;background:transparent}
+  .burger[aria-expanded="true"] span::before{top:0;transform:rotate(45deg)}
+  .burger[aria-expanded="true"] span::after{top:0;transform:rotate(-45deg)}
+}
+@media (max-width:760px){
+  .gallery{grid-template-columns:1fr}
+  section{padding:64px 0}
+  .hero{padding:72px 0 56px}
+  footer.site .cols{grid-template-columns:1fr;gap:14px}
+  .cli,.step{font-size:14px}
+  .arch{overflow-x:auto}
+  .arch svg{min-width:680px}
+}
+@media (max-width:480px){
+  .wrap{padding:0 18px}
+  .cta .btn{flex:1 1 auto;text-align:center}
+  .stat .v{font-size:32px}
+  .caps{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .hero .ups,.js .rv{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}
+  .btn:hover{transform:none}
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<!-- ===== 导航 ===== -->
+<nav class="nav" aria-label="站内导航">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
+        <defs><linearGradient id="lgNav" x1="0" y1="0" x2="32" y2="32">
+          <stop offset="0" stop-color="#6366f1"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
+        </linearGradient></defs>
+        <circle cx="16" cy="16" r="13.6" fill="none" stroke="#2b2b40" stroke-width="1.4"/>
+        <path d="M16 6.2 L19 15.9 L16 25.8 L13 15.9 Z" fill="url(#lgNav)"/>
+        <path d="M6.2 16 L15.9 13 L25.8 16 L15.9 19 Z" fill="#06b6d4" opacity=".5"/>
+      </svg>
+      FleetDeck
+    </a>
+    <button class="burger" aria-label="展开导航菜单" aria-expanded="false" aria-controls="nav-menu"><span></span></button>
+    <ul class="nav-links" id="nav-menu">
+      <li><a href="#what">它是什么</a></li>
+      <li><a href="#axes">三条轴</a></li>
+      <li><a href="#workflow">工作流</a></li>
+      <li><a href="#capabilities">能力</a></li>
+      <li><a href="#office">办公室</a></li>
+      <li><a href="#numbers">数据</a></li>
+      <li><a href="#about">关于</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ===== S1 首屏 ===== -->
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker ups" style="--d:0ms"><span class="rule"></span>FleetDeck · 多智能体指挥台</p>
+    <h1 class="ups" style="--d:60ms">FleetDeck</h1>
+    <p class="sub ups" style="--d:120ms">一个人的 AI 公司</p>
+    <p class="lead ups" style="--d:170ms">用中文语音指挥一支 AI 团队。</p>
+    <p class="desc ups" style="--d:230ms">一句话派活,主管自己拆解、分派、回收执;多个角色并行干活,进度开口就问。它管的不是聊天窗口,是一支跑在你项目文件上的真实团队。</p>
+    <div class="cta ups" style="--d:290ms">
+      <a class="btn btn-primary" href="#capabilities">它能做什么 →</a>
+      <a class="btn btn-ghost" href="#about">关于本项目</a>
+    </div>
+    <figure class="shot fig-full ups" style="--d:350ms">
+      <a class="frame" href="assets/01-3d-view.jpg" target="_blank" rel="noopener">
+        <img src="assets/01-3d-view.jpg" alt="FleetDeck 的 3D 战场界面:中文命名的角色与建筑,每个角色带状态条" width="1600" height="900" fetchpriority="high">
+      </a>
+      <figcaption>3D 战场——每个角色是一个真实进程,位置、归属、状态一目了然。</figcaption>
+    </figure>
+    <p class="credit ups" style="--d:410ms">基于 <b>Tide Commander</b>(作者 <b>deivid11</b>,MIT 许可)二次开发。</p>
+  </div>
+</header>
+
+<!-- ===== S2 它是什么 ===== -->
+<section id="what">
+  <div class="wrap">
+    <h2 class="rv">它是什么</h2>
+    <p class="rv" style="--d:60ms">Tide Commander 是一个面向多 AI 编码代理的<b>可视化编排与操作台</b>——它把 Claude Code、Codex、OpenCode、Grok、Pi 这些命令行编码代理,注册成"有位置、有归属、有上下级"的实体,并在同一个界面里完成文件浏览、Git、终端、数据库、测试等操作。</p>
+    <div class="cli-row rv" style="--d:100ms" aria-label="支持的 CLI 编码代理">
+      <span class="cli"><img src="assets/claude.png" alt="" width="20" height="20">Claude Code</span>
+      <span class="cli"><img src="assets/codex.png" alt="" width="20" height="20">Codex</span>
+      <span class="cli"><img src="assets/opencode.png" alt="" width="20" height="20">OpenCode</span>
+      <span class="cli"><img src="assets/grok.png" alt="" width="20" height="20">Grok</span>
+      <span class="cli"><img src="assets/pi.png" alt="" width="20" height="20">Pi</span>
+    </div>
+    <p class="rv" style="--d:120ms">FleetDeck 基于它深度改造:<b>上游引擎 + 本地组织层与交互层</b>。定位收窄为三个词——<b>中文、语音优先、组织导向</b>:写给在中文环境里"一个人当一支队伍使"的人。</p>
+    <p class="rv" style="--d:160ms"><b>它不是新的 AI 编码器。</b>它指挥你已经装好的 CLI 编码代理——每一个角色,都是跑在你项目文件上的真实进程:真工具、真凭据、真会话历史。</p>
+
+    <figure class="arch rv" style="--d:200ms">
+      <svg viewBox="0 0 980 600" role="img" aria-label="架构示意:浏览器客户端、本地服务端、CLI 编码代理三层,以及语音链路">
+        <defs>
+          <linearGradient id="lgArch" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6366f1"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
+          </linearGradient>
+          <marker id="arw" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#3a3a52"/>
+          </marker>
+        </defs>
+        <!-- 层1:客户端 -->
+        <rect x="150" y="18" width="680" height="88" rx="12" fill="#15151f" stroke="#26263a"/>
+        <text x="490" y="54" text-anchor="middle" fill="#e8e8f0" font-size="17" font-weight="600">浏览器客户端界面</text>
+        <text x="490" y="80" text-anchor="middle" fill="#a0a0b0" font-size="13">3D 战场 · 面板视图 · 全局搜索 · 语音按钮</text>
+        <!-- 连接1 -->
+        <line x1="490" y1="106" x2="490" y2="146" stroke="#3a3a52" stroke-width="1.5" marker-end="url(#arw)"/>
+        <text x="504" y="131" fill="#a0a0b0" font-size="13">WebSocket / HTTP(仅本机)</text>
+        <!-- 层2:服务端 -->
+        <rect x="150" y="148" width="680" height="104" rx="12" fill="#15151f" stroke="#26263a"/>
+        <text x="490" y="188" text-anchor="middle" fill="#e8e8f0" font-size="17" font-weight="600">本地服务端(Node 进程)</text>
+        <text x="490" y="214" text-anchor="middle" fill="#a0a0b0" font-size="13">会话编排 · 派活与并发配额 · 技能 / 触发器 · 文件与 Git · 数据库</text>
+        <!-- 连接2 -->
+        <line x1="490" y1="252" x2="490" y2="292" stroke="#3a3a52" stroke-width="1.5" marker-end="url(#arw)"/>
+        <text x="504" y="277" fill="#a0a0b0" font-size="13">spawn 子进程 · 真实文件读写</text>
+        <!-- 层3:CLI 代理 -->
+        <rect x="150" y="294" width="680" height="146" rx="12" fill="#15151f" stroke="#26263a"/>
+        <text x="490" y="330" text-anchor="middle" fill="#e8e8f0" font-size="17" font-weight="600">CLI 编码代理 × N —— 每个角色 = 一个真实进程</text>
+        <image href="assets/claude.png" x="237" y="352" width="26" height="26"/>
+        <image href="assets/codex.png" x="357" y="352" width="26" height="26"/>
+        <image href="assets/opencode.png" x="477" y="352" width="26" height="26"/>
+        <image href="assets/grok.png" x="597" y="352" width="26" height="26"/>
+        <image href="assets/pi.png" x="717" y="352" width="26" height="26"/>
+        <text x="250" y="400" text-anchor="middle" fill="#a0a0b0" font-size="12.5">Claude Code</text>
+        <text x="370" y="400" text-anchor="middle" fill="#a0a0b0" font-size="12.5">Codex</text>
+        <text x="490" y="400" text-anchor="middle" fill="#a0a0b0" font-size="12.5">OpenCode</text>
+        <text x="610" y="400" text-anchor="middle" fill="#a0a0b0" font-size="12.5">Grok</text>
+        <text x="730" y="400" text-anchor="middle" fill="#a0a0b0" font-size="12.5">Pi</text>
+        <text x="490" y="426" text-anchor="middle" fill="#606070" font-size="12">跑在你的项目文件上:真工具 · 真凭据 · 真会话历史</text>
+        <!-- 语音链路 -->
+        <rect x="150" y="472" width="680" height="108" rx="12" fill="#101018" stroke="#2c2c3e" stroke-dasharray="6 5"/>
+        <text x="490" y="508" text-anchor="middle" fill="#e8e8f0" font-size="17" font-weight="600">语音链路</text>
+        <text x="490" y="535" text-anchor="middle" fill="#a0a0b0" font-size="13">麦克风 → 语音识别 → 伙伴大脑 → 中文神经语音 → 扬声器</text>
+        <text x="490" y="559" text-anchor="middle" fill="#606070" font-size="12">常开语音伙伴 · 分句流式播报;本地识别为主,可选云通道</text>
+      </svg>
+      <figcaption>架构示意:界面在浏览器,服务端在本机;真正的活,由你装好的 CLI 代理干。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== S3 三条轴 ===== -->
+<section id="axes">
+  <div class="wrap">
+    <h2 class="rv">三条轴:与上游相比,FleetDeck 改了什么</h2>
+    <div class="axes">
+      <div class="card rv">
+        <span class="tag">轴一 · 交互面</span>
+        <h3>全链路中文语音</h3>
+        <ul class="plain">
+          <li>界面全量中文本地化:<b>5584 条文案、202 个客户端文件</b>接线,配套审计工具链,随代码演进保持不漂移。</li>
+          <li>语音全链路本地化:中文神经语音播报、本地语音识别、常开语音伙伴;边生成边播、分句流式。</li>
+          <li>慢回合自动垫话:固定 13 句静态池,<b>零生成</b>——不为了撑场子乱说话。</li>
+        </ul>
+      </div>
+      <div class="card rv" style="--d:80ms">
+        <span class="tag">轴二 · 组织层</span>
+        <h3>编制与治理</h3>
+        <ul class="plain">
+          <li>建队纪律:接新项目先出「编制清单」,清单内批量建人、建完回执;超编要你点头;缺员自动同编制补位。</li>
+          <li>待岗:一键让某个员工停岗——进程停止、拒绝派活,档案与层级原样保留,随时恢复上岗。</li>
+          <li>并发配额:全局同时派活数自动排队(默认 3),完成一个放行一个,不丢活。</li>
+          <li>团队笔记:任务收尾把「坑 / 约定 / 产出位置」写进仓库的 .team-notes/ 目录,下次开工先扫相关条目。</li>
+        </ul>
+      </div>
+      <div class="card rv" style="--d:160ms">
+        <span class="tag">轴三 · 形态层</span>
+        <h3>从战场到办公室</h3>
+        <ul class="plain">
+          <li>今天是 3D / 2D 战场:昼夜四时段自动切换,角色可点选、拖拽、右键派令,建筑可操作。</li>
+          <li>下一步是办公室:8 个办公白领角色已生成(含伏案打字动画),环境改造待实施——详见下方路线图。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== S4 真实工作流 ===== -->
+<section id="workflow">
+  <div class="wrap">
+    <h2 class="rv">真实工作流</h2>
+    <p class="sec-lead rv">不看演示稿,看两个有据可查的场景——数字全部来自本机实测记录。</p>
+
+    <div class="card rv" style="padding:32px 30px 28px">
+      <span class="tag">场景 A</span>
+      <h3 style="font-size:22px">一句话,到办结回执</h3>
+      <div class="steps">
+        <div class="step" data-n="1"><b>说一句需求</b>对主管开口</div>
+        <div class="step" data-n="2"><b>产出合规派活书</b>自动转发给员工</div>
+        <div class="step" data-n="3"><b>员工真实执行</b>改的是你的文件</div>
+        <div class="step" data-n="4"><b>回执核对通过</b>按验收标准检查</div>
+        <div class="step" data-n="5"><b>办结登记</b>写进任务台账</div>
+        <div class="step" data-n="6"><b>结果自动播报</b>播完回到聆听</div>
+      </div>
+      <p class="result-line" style="margin-bottom:0">实测:清会话后的首考,<strong>全链 <span class="num">42.7</span> 秒</strong>闭环(全历史首次)。语音侧:提交到首句出声 <strong class="num">3.9 秒</strong>,播完回到聆听 <strong class="num">7.7 秒</strong>。</p>
+    </div>
+
+    <figure class="shot fig-wide rv">
+      <a class="frame" href="assets/04-delegation.jpg" target="_blank" rel="noopener">
+        <img src="assets/04-delegation.jpg" alt="派活书与办结回执的终端输出:委派对象、任务契约、任务已完成登记" width="1600" height="900" loading="lazy">
+      </a>
+      <figcaption>派活与回执——委派对象、验收标准、办结登记,每一单都有据可查。</figcaption>
+    </figure>
+
+    <div class="rv" style="margin-top:60px">
+      <span class="tag">场景 B</span>
+      <h3 style="font-size:22px">越用越快</h3>
+      <div class="two-steps">
+        <div class="card">
+          <h3><span class="idx">第一步 · 常驻化</span></h3>
+          <p>语音伙伴从"一轮一启动"改为常驻进程——冷启动一轮 <span class="num">16.6 秒</span> → 热轮 <span class="num">2.1 秒</span>(<b>≈8 倍</b>,省 87%)。隔离沙箱 6+6 轮真实对话,12/12 全绿。</p>
+        </div>
+        <div class="card">
+          <h3><span class="idx">第二步 · 长会话治理</span></h3>
+          <p>聊久了会变慢(实测退化到 <span class="num">74.4 秒</span> 量级)。加入自动轮换 + 交接笔记(轮换时把"刚才说到哪"交班)后,p50 回落到 <span class="num">3.4 秒</span>(<b>≈21.9 倍</b>)。如实说明:46 秒的长尾仍然存在,已登记在案、不做粉饰。</p>
+        </div>
+      </div>
+    </div>
+
+    <figure class="shot fig-wide rv">
+      <a class="frame" href="assets/02-companion.jpg" target="_blank" rel="noopener">
+        <img src="assets/02-companion.jpg" alt="语音伙伴的对话气泡:听到需求后回答,并把任务转给主管执行" width="1600" height="900" loading="lazy">
+      </a>
+      <figcaption>语音伙伴——说出需求,它转给主管执行,再把结果查回来播报。</figcaption>
+    </figure>
+
+    <div class="rv" style="margin-top:60px">
+      <span class="tag">场景 C</span>
+      <h3 style="font-size:22px">说到做到</h3>
+      <ul class="plain" style="max-width:46em">
+        <li>垫话有<b>出口硬闸</b>:可能替你乱承诺的句子会被拦截,拦截后重生成,重生成仍违规就干脆不出声。</li>
+        <li>分钟级提醒<b>不进大模型</b>:确定性解析 + 服务端定时器,到点播报;只收确定说法(15 秒–24 小时),最多挂 10 条。</li>
+        <li>一条原则:页面离线时"必响"做不到——做不到的事,文案与话术里都不假造。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== S5 能力全景 ===== -->
+<section id="capabilities">
+  <div class="wrap">
+    <h2 class="rv">能力全景:一个人,一整套工作台</h2>
+    <div class="caps">
+      <div class="card rv"><h3>多视图作战</h3><p>3D / 2D / 仪表盘 / 平铺四种视图,外加指挥官视图(多终端网格)、Guake 终端、全局搜索;角色可点选、拖动、右键派令,可划区域做"作战地盘"。</p></div>
+      <div class="card rv" style="--d:60ms"><h3>十类建筑,栋栋带真功能</h3><p>服务器(PM2 托管)、Docker 编排、数据库连接、Web 终端(ttyd + tmux 持久会话)、测试浏览器(Maven / Vitest / PHPUnit 等)、HTTP 请求集(IntelliJ 风格 .http)、指挥中心(批量控制下属)、文件夹、链接、斜杠命令。</p></div>
+      <div class="card rv" style="--d:120ms"><h3>文件与 Git 工作台</h3><p>多根文件树、内嵌代码编辑器、diff / 历史 / 分支对比。</p></div>
+      <div class="card rv"><h3>数据库面板</h3><p>MySQL / PostgreSQL / Oracle / SQLite / SQL Server 五引擎,可选 SSH 隧道,schema 浏览 + 查询历史。</p></div>
+      <div class="card rv" style="--d:60ms"><h3>专业预览</h3><p>docx / xlsx / PDF / 音视频,STL / GLB / FreeCAD / G-code 直接看。</p></div>
+      <div class="card rv" style="--d:120ms"><h3>可扩展</h3><p>内置技能(通知、记忆、委派回执、Git、数据库、浏览器控制等)、插件、八类外部触发器(Webhook / 邮件 / Slack / Jira / 定时 / WhatsApp / 微信 ClawBot / Bitbucket)、状态机工作流编辑器。</p></div>
+      <div class="card rv"><h3>浏览器桥</h3><p>让 agent 观察并驱动你<b>已登录</b>的真实浏览器;每个标签页开关默认关闭,开启后页面注入徽章提示,可设 origin 白名单。</p></div>
+      <div class="card rv" style="--d:60ms"><h3>移动端</h3><p>手机浏览器接上局域网,出门也能指挥。</p></div>
+    </div>
+
+    <div class="gallery">
+      <figure class="shot rv">
+        <a class="frame" href="assets/05-standby.jpg" target="_blank" rel="noopener">
+          <img src="assets/05-standby.jpg" alt="成员列表中的待岗徽章:条目灰显,状态为待岗" width="1600" height="900" loading="lazy">
+        </a>
+        <figcaption>待岗——进程停止、拒接派活;档案与层级原样保留,随时恢复。</figcaption>
+      </figure>
+      <figure class="shot rv" style="--d:80ms">
+        <a class="frame" href="assets/06-dashboard.jpg" target="_blank" rel="noopener">
+          <img src="assets/06-dashboard.jpg" alt="仪表盘视图:全队统计与成员卡片" width="1600" height="900" loading="lazy">
+        </a>
+        <figcaption>仪表盘视图——全队状态一屏扫完。</figcaption>
+      </figure>
+      <figure class="shot rv">
+        <a class="frame" href="assets/07-commander.jpg" target="_blank" rel="noopener">
+          <img src="assets/07-commander.jpg" alt="指挥官视图:多终端网格里每个成员的会话状态" width="1600" height="900" loading="lazy">
+        </a>
+        <figcaption>指挥官视图——多终端网格,谁在干什么一眼尽收。</figcaption>
+      </figure>
+      <figure class="shot rv" style="--d:80ms">
+        <a class="frame" href="assets/08-files.jpg" target="_blank" rel="noopener">
+          <img src="assets/08-files.jpg" alt="文件与 Git 工作台:文件树、内嵌编辑器与 diff 视图" width="1600" height="900" loading="lazy">
+        </a>
+        <figcaption>文件与 Git 工作台——多根文件树、内嵌编辑器、diff 与历史。</figcaption>
+      </figure>
+    </div>
+
+    <figure class="shot phone rv">
+      <a class="frame" href="assets/09-mobile.jpg" target="_blank" rel="noopener">
+        <img src="assets/09-mobile.jpg" alt="手机浏览器中的 FleetDeck 中文界面" width="720" height="1560" loading="lazy">
+      </a>
+      <figcaption style="text-align:center">移动端——手机浏览器接上局域网,出门也能指挥。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== S6 办公室/路线图 ===== -->
+<section id="office">
+  <div class="wrap">
+    <h2 class="rv">路线图:从战场到办公室</h2>
+    <div class="office-2col">
+      <div class="card rv">
+        <span class="tag">现在</span>
+        <h3>战场</h3>
+        <p>3D 场景已经是一个完整的"战场"——昼夜四时段自动切换,角色大小、动画、模型材质可调,角色与建筑都能点选、拖拽、指挥。</p>
+      </div>
+      <div class="card rv" style="--d:80ms">
+        <span class="tag">下一步</span>
+        <h3>办公室</h3>
+        <p>8 个办公白领角色已程序化生成——骨架、体量、材质与现有角色逐项对齐,还带一段自制的"伏案打字"动画——但尚未接入界面;办公室环境改造方向已定、待实施。</p>
+      </div>
+    </div>
+
+    <figure class="shot fig-full rv">
+      <a class="frame" href="assets/10-crew.png" target="_blank" rel="noopener">
+        <img src="assets/10-crew.png" alt="8 个办公白领角色的并排预览:西装、衬衫、马甲与裙装等款式,风格与现有体素角色一致" width="1240" height="532" loading="lazy">
+      </a>
+      <figcaption>8 个办公白领角色——与现有角色同规格生成,附自制「伏案打字」动画;已生成、尚未接入界面。</figcaption>
+    </figure>
+    <p class="crew-quote rv">它们已经做好了,只是还没搬进办公室——<b>所以我们把它放在路线图里,而不是截图里。</b></p>
+  </div>
+</section>
+
+<!-- ===== S7 实测数字 ===== -->
+<section id="numbers">
+  <div class="wrap">
+    <h2 class="rv">实测数字(不是 PPT 数字)</h2>
+    <div class="stats">
+      <div class="stat rv">
+        <div class="v num">3.9<em>s</em></div>
+        <div class="k">语音首句出声</div>
+        <div class="m">文本注入口径;播完回到聆听 7.7s</div>
+      </div>
+      <div class="stat rv" style="--d:60ms">
+        <div class="v num">≈8<em>×</em></div>
+        <div class="k">常驻化提速</div>
+        <div class="m">16.6s → 2.1s,省 87%(隔离沙箱 6+6 轮真实对话)</div>
+      </div>
+      <div class="stat rv" style="--d:120ms">
+        <div class="v num">21.9<em>×</em></div>
+        <div class="k">长会话治理后 p50 3.4s</div>
+        <div class="m">对照退化基线 74.4s;26 轮模拟真人复跑</div>
+      </div>
+      <div class="stat rv">
+        <div class="v num">42.7<em>s</em></div>
+        <div class="k">一句话到回执播报全链闭环</div>
+        <div class="m">清会话后首考,全历史首次</div>
+      </div>
+      <div class="stat rv" style="--d:60ms">
+        <div class="v num">2<em>ms</em></div>
+        <div class="k">分钟级提醒到点偏差</div>
+        <div class="m">回执约 4s;确定性解析 + 服务端定时器</div>
+      </div>
+      <div class="stat rv" style="--d:120ms">
+        <div class="v num">4461</div>
+        <div class="k">全量测试用例</div>
+        <div class="m">353 个文件;历史基线 34 条逐条登记在案</div>
+      </div>
+      <div class="stat rv">
+        <div class="v num">5584</div>
+        <div class="k">界面文案中文本地化条目</div>
+        <div class="m">202 个客户端文件接线</div>
+      </div>
+    </div>
+    <p class="footnote rv">均为本机开发记录(2026-10 实测);非实验室理想值,未做跨机器验证。</p>
+  </div>
+</section>
+
+<!-- ===== S8 关于 ===== -->
+<section id="about">
+  <div class="wrap">
+    <h2 class="rv">关于</h2>
+    <div class="about-grid">
+      <div>
+        <p class="rv">FleetDeck = 基于 Tide Commander 深度改造的<b>多智能体指挥台</b>:上游引擎(可视化多代理编排)+ 本地组织层与交互层(中文全量、语音全链、组织治理、办公室方向)。</p>
+        <p class="rv" style="--d:60ms">基于 <b>Tide Commander</b>(作者 <b>deivid11</b>,MIT 许可)二次开发;与上游官方无隶属关系。感谢上游作者与社区。</p>
+        <p class="rv" style="--d:100ms">仓库与联系:<a href="https://github.com/kai-gq/AI-FleetDeck" target="_blank" rel="noopener"><b>github.com/kai-gq/AI-FleetDeck</b></a>(Issue 即联系方式)。</p>
+      </div>
+      <aside class="about-side rv" style="--d:140ms">
+        <dl>
+          <dt>产品</dt><dd>FleetDeck · 多智能体指挥台</dd>
+          <dt>上游基座</dt><dd>Tide Commander — deivid11(MIT)</dd>
+          <dt>本地化规模</dt><dd>5584 条文案 · 202 个文件</dd>
+          <dt>语音</dt><dd>中文神经语音 · 本地识别 · 常开伙伴</dd>
+          <dt>联系方式</dt><dd><a href="https://github.com/kai-gq/AI-FleetDeck/issues" target="_blank" rel="noopener">GitHub Issues</a></dd>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ===== S9 页脚 ===== -->
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div><b>FleetDeck</b> · 基于 Tide Commander(MIT) · <a href="https://github.com/kai-gq/AI-FleetDeck">公开仓库</a></div>
+      <div>截图中的项目名与人名均为演示数据。</div>
+      <div>本页零外部依赖:不使用 CDN 与网络字体,离线可直接打开。</div>
+    </div>
+    <a class="uptop" href="#top">回到顶部 ↑</a>
+  </div>
+</footer>
+
+<a class="totop" href="#top" aria-label="回到顶部">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+</a>
+
+<script>
+(function(){
+  var burger=document.querySelector('.burger'), menu=document.getElementById('nav-menu');
+  if(burger&&menu){
+    burger.addEventListener('click',function(){
+      var open=menu.classList.toggle('open');
+      burger.setAttribute('aria-expanded', open?'true':'false');
+    });
+    menu.addEventListener('click',function(e){
+      if(e.target.closest('a')){menu.classList.remove('open');burger.setAttribute('aria-expanded','false');}
+    });
+  }
+  var nav=document.querySelector('.nav'), totop=document.querySelector('.totop');
+  function onScroll(){
+    if(nav) nav.classList.toggle('scrolled', window.scrollY>8);
+    if(totop) totop.classList.toggle('show', window.scrollY>640);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  var links=[].slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+  var secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));}).filter(Boolean);
+  var rvs=[].slice.call(document.querySelectorAll('.rv'));
+  if('IntersectionObserver' in window && secs.length){
+    var spy=new IntersectionObserver(function(es){
+      es.forEach(function(en){
+        if(!en.isIntersecting) return;
+        links.forEach(function(l){l.classList.remove('active');});
+        var a=links[secs.indexOf(en.target)];
+        if(a) a.classList.add('active');
+      });
+    },{rootMargin:'-40% 0px -55% 0px'});
+    secs.forEach(function(s){spy.observe(s);});
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(en){ if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);} });
+    },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    rvs.forEach(function(el){ io.observe(el); });
+  } else {
+    rvs.forEach(function(el){ el.classList.add('in'); });
+  }
+})();
+</script>
+
+
+
+
+</body>
+</html>
