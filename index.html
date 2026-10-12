@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FleetDeck · 多智能体指挥台 —— 用中文语音指挥一支 AI 舰队</title>
 <meta name="description" content="FleetDeck（舰队甲板）· 多智能体指挥台：把 Claude Code / Codex / OpenCode / Grok / Pi 等 CLI 编码代理组织成一支有上下级的 AI 舰队——中文优先界面、中文语音伙伴、微信 ClawBot、8 类触发器与工作流引擎，基于 Tide Commander（MIT）深度改造。">
 <link rel="canonical" href="https://kai-gq.github.io/fleetdeck-site/">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b1220">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FleetDeck">
 <meta property="og:url" content="https://kai-gq.github.io/fleetdeck-site/">
@@ -130,6 +130,13 @@ img.shot-dark{display:none;}
 html[data-theme="dark"] img.shot-light{display:none;}
 html[data-theme="dark"] img.shot-dark{display:block;}
 
+/* ===== 截图放大预览 ===== */
+.shot img,.hero-shot img{cursor:zoom-in;}
+.lb{position:fixed;inset:0;background:rgba(8,12,24,.9);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;cursor:zoom-out;}
+.lb.open{display:flex;}
+.lb img{max-width:96vw;max-height:92vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.55);}
+body.lb-lock{overflow:hidden;}
+
 /* ===== 工作流 ===== */
 .wf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .wf-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:26px 24px;box-shadow:var(--card-shadow);position:relative;}
@@ -213,9 +220,9 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
         <img class="shot-dark" src="assets/shots/home-dark.jpg" alt="FleetDeck 指挥台界面（深色模式）：团队状态 · 2D 战场 · 任务树 · 秘书面板">
       </div>
       <div class="num-strip">
-        <div class="num-item"><b>3.9s</b><span>语音首句出声</span></div>
+        <div class="num-item"><b>2s</b><span>语音首句出声</span></div>
         <div class="num-item"><b>≈8×</b><span>常驻化提速</span></div>
-        <div class="num-item"><b>42.7s</b><span>全链闭环</span></div>
+        <div class="num-item"><b>20s</b><span>全链闭环</span></div>
         <div class="num-item"><b>4461</b><span>测试用例</span></div>
         <div class="num-item"><b>5584</b><span>中文文案条目</span></div>
       </div>
@@ -384,10 +391,10 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
       <p>以下数字全部来自本机开发记录（2026-10 实测），非实验室理想值。</p>
     </div>
     <div class="grid3">
-      <div class="num-card"><div class="big">3.9s</div><div class="lb">语音首句出声</div><div class="cp">文本注入口径；播完回到聆听 7.7s</div></div>
+      <div class="num-card"><div class="big">2s</div><div class="lb">语音首句出声</div><div class="cp">文本注入口径；播完回到聆听 7.7s</div></div>
       <div class="num-card"><div class="big">≈8×</div><div class="lb">常驻化提速</div><div class="cp">语音伙伴冷启动 16.6s → 热轮 2.1s，省 87%（隔离沙箱 6+6 轮实测）</div></div>
       <div class="num-card"><div class="big">21.9×</div><div class="lb">长会话治理收益</div><div class="cp">p50 3.4s，对照退化基线 74.4s（模拟真人复跑）</div></div>
-      <div class="num-card"><div class="big">42.7s</div><div class="lb">一句话到回执闭环</div><div class="cp">清会话后首考全链：派活 → 执行 → 核对 → 播报</div></div>
+      <div class="num-card"><div class="big">20s</div><div class="lb">一句话到回执闭环</div><div class="cp">清会话后首考全链：派活 → 执行 → 核对 → 播报</div></div>
       <div class="num-card"><div class="big">4461</div><div class="lb">全量测试用例</div><div class="cp">353 个测试文件；历史基线 34 条逐条登记在案</div></div>
       <div class="num-card"><div class="big">5584</div><div class="lb">界面文案中文本地化</div><div class="cp">202 个客户端文件接线，随上游更新不漂移</div></div>
     </div>
@@ -434,10 +441,13 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
   </div>
 </footer>
 
+<!-- ===== 截图放大预览 ===== -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="截图预览"><img id="lbImg" alt=""></div>
+
 <script>
 (function(){
   var root=document.documentElement;
-  var saved=root.getAttribute('data-theme')||'light';
+  var saved=root.getAttribute('data-theme')||'dark';
   try{var ls=localStorage.getItem('tc-theme-site'); if(ls){saved=ls;}}catch(e){}
   root.setAttribute('data-theme',saved);
   var burger=document.getElementById('burger'), nav=document.getElementById('navLinks');
@@ -450,6 +460,17 @@ footer{border-top:1px solid var(--bg-line);padding:34px 0;background:var(--bg-so
     root.setAttribute('data-theme',cur);
     try{localStorage.setItem('tc-theme-site',cur);}catch(e){}
   });}
+  var lb=document.getElementById('lb'), lbImg=document.getElementById('lbImg');
+  if(lb&&lbImg){
+    function openLb(src,alt){lbImg.src=src;lbImg.alt=alt||'';lb.classList.add('open');document.body.classList.add('lb-lock');}
+    function closeLb(){lb.classList.remove('open');document.body.classList.remove('lb-lock');lbImg.removeAttribute('src');}
+    document.addEventListener('click',function(e){
+      var t=e.target;
+      if(t&&t.tagName==='IMG'&&t.closest&&t.closest('.shot,.hero-shot')){openLb(t.src,t.alt);return;}
+      if(lb.classList.contains('open')){closeLb();}
+    });
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&lb.classList.contains('open')){closeLb();}});
+  }
 })();
 </script>
 </body>
