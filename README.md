@@ -8,4 +8,4 @@ FleetDeck 官方网站:单页静态站,GitHub Pages 发布。
 - **更新方式**:改 `index.html` / `assets` 后直接 push 到 `main`,Pages 自动重新发布
 - **源草稿**:在开发仓的 `FleetDeck官网/` 目录同步维护(改完复制到本仓库)
 
-产品仓库:https://github.com/kai-gq/AI-FleetDeck
+产品仓库:https://github.com/kai-gq/FleetDeck
